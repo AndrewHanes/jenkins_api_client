@@ -179,7 +179,7 @@ describe JenkinsApi::Client do
       describe "#api_post_request" do
         it "is defined and should accept url_prefix" do
           @client.respond_to?(:api_post_request).should be_true
-          @client.method(:api_post_request).parameters.size.should == 3
+          @client.method(:api_post_request).parameters.size.should == 4
         end
       end
 

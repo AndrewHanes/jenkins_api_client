@@ -366,7 +366,7 @@ module JenkinsApi
     #
     # @return [String] Response code form Jenkins Response
     #
-    def api_post_request(url_prefix, form_data = {}, raw_response = false)
+    def api_post_request(url_prefix, form_data = {}, raw_response = false, format_data = true)
       retries = @crumb_max_retries
       begin
         refresh_crumbs
@@ -378,7 +378,11 @@ module JenkinsApi
         if @crumbs_enabled
           request[@crumb["crumbRequestField"]] = @crumb["crumb"]
         end
-        request.set_form_data(form_data)
+        if !format_data
+          request.body = form_data
+        else
+          request.set_form_data(form_data)
+        end
         response = make_http_request(request)
         if raw_response
           handle_exception(response, "raw")
