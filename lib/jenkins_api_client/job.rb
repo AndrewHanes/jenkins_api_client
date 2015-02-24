@@ -21,6 +21,8 @@
 #
 
 require 'jenkins_api_client/urihelper'
+require 'active_support'
+require 'active_support/core_ext'
 
 module JenkinsApi
   class Client
@@ -1499,10 +1501,11 @@ module JenkinsApi
       # @param  [String] job_name
       # @param  [Integer] job_num
       # @return Hash of config
-      def get_promote_config(job_name, process)
+      def get_promote_config(job_name, process,
+                             xml_root = 'hudson.plugins.promoted__builds.PromotionProcess')
         @logger.info "Getting promote config for job '#{job_name}' process '#{process}'"
         resp = @client.api_get_request("/job/#{job_name}/promotion/process/#{process}/config.xml", nil, "/api/json", true).body
-        resp
+        Hash.from_xml(resp)[xml_root]
       end
 
       # Set a job as promoted
@@ -1511,9 +1514,12 @@ module JenkinsApi
       # @param  [Integer] job_num
       # @param  [Hash] Hash for job config (Same as hash returned by get_promote_config)
       # @return nil
-      def set_promote_config(job_name, process, config)
-        @logger.info "Setting promote config for job '#{job_name}' process '#{process}' to #{config}"
-        @client.api_post_request("/job/#{job_name}/promotion/process/#{process}/config.xml", config, true, false)
+      def set_promote_config(job_name, process, config,
+                             xml_root = 'hudson.plugins.promoted__builds.PromotionProcess')
+        config_xml = config.to_xml(dasherize: false, root: xml_root)
+        @logger.info "Setting promote config for job '#{job_name}' process '#{process}' to #{config_xml}"
+        @client.api_post_request("/job/#{job_name}/promotion/process/#{process}/config.xml", config_xml, true, false)
+        nil
       end
 
       #A Method to find artifacts path from the Current Build

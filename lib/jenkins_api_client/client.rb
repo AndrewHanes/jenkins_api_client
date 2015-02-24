@@ -363,10 +363,13 @@ module JenkinsApi
     #
     # @param [String] url_prefix The prefix to be used in the URL
     # @param [Hash] form_data Form data to send with POST request
+    # @param [Boolean] raw_response pass "raw" to handle_exception
+    # @param [Boolean] data_as_body Set request body to form_data, rather than
+    #   calling set_form_data with it
     #
     # @return [String] Response code form Jenkins Response
     #
-    def api_post_request(url_prefix, form_data = {}, raw_response = false, format_data = true)
+    def api_post_request(url_prefix, form_data = {}, raw_response = false, data_as_body = false)
       retries = @crumb_max_retries
       begin
         refresh_crumbs
@@ -378,7 +381,7 @@ module JenkinsApi
         if @crumbs_enabled
           request[@crumb["crumbRequestField"]] = @crumb["crumb"]
         end
-        if !format_data
+        if data_as_body
           request.body = form_data
         else
           request.set_form_data(form_data)
